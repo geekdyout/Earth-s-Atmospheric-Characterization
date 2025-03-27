@@ -1,0 +1,1 @@
+# Wavelength optimizer module initialization

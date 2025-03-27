@@ -1,0 +1,46 @@
+FROM nvcr.io/nvidia/l4t-base:r32.6.1
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    python3-dev \
+    build-essential \
+    libgdal-dev \
+    libnetcdf-dev \
+    libhdf5-dev \
+    libproj-dev \
+    wget \
+    git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create a symbolic link for python
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+# Copy requirements file
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Copy the entire project
+COPY . .
+
+# Create necessary directories
+RUN mkdir -p data/raw data/processed data/temporal data/metrics
+
+# Set environment variables
+ENV PYTHONPATH=/app
+
+# Set resource limits to simulate CubeSat constraints
+# These are enforced at runtime with Docker flags:
+# --memory=200mb --cpus=1.0
+
+# Default command
+CMD ["bash"]
+
+# Usage: 
+# docker build -t cubesat-sim --memory=200mb --cpus=1.0 -f Dockerfile.jetson .
